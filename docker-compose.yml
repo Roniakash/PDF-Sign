@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  # ── Python FastAPI backend ───────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: pdf_signer_backend
+    restart: unless-stopped
+    ports:
+      - "8012:8012"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      # Hot-reload in development: mount source into container
+      - ./backend:/app
+    networks:
+      - pdf_net
+
+  # ── React + Nginx frontend ───────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: pdf_signer_frontend
+    restart: unless-stopped
+    ports:
+      - "8090:80"
+    depends_on:
+      - backend
+    networks:
+      - pdf_net
+
+networks:
+  pdf_net:
+    driver: bridge
