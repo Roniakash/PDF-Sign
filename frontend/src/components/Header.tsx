@@ -18,6 +18,9 @@ export const Header: React.FC<HeaderProps> = ({ today }) => {
     <header className="app-header" role="banner">
       {/* ── Left: Title block ── */}
       <div className="header-brand">
+        <div className="header-logo">
+          <img src="/oxbow_intellect_logo.jpeg" alt="Oxbow Intellect" />
+        </div>
         <div className="header-title-block">
           <span className="header-breadcrumb">ADMIN · DOCUMENTS</span>
           <h1 className="header-title">Sign a PDF</h1>

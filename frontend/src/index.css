@@ -121,6 +121,21 @@ body {
   gap: 16px;
 }
 
+.header-logo {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.header-logo img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
 .header-title-block {
   display: flex;
   flex-direction: column;
