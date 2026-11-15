@@ -1,7 +1,6 @@
 import io
 import base64
 from pathlib import Path
-from typing import Union
 
 import fitz  # PyMuPDF
 from fastapi import FastAPI, File, Form, UploadFile, HTTPException
@@ -22,62 +21,34 @@ TEMP_DIR = Path("temp")
 TEMP_DIR.mkdir(exist_ok=True)
 
 
-# ── Static signature settings ────────────────────────────────────────────────
-SIG_WIDTH  = 45    # points
-SIG_HEIGHT = 20    # points
-MARGIN_X   = 5     # points: From left (X)
-MARGIN_Y   = 5     # points: From bottom (Y)
+# ── Static signature settings (same values as the Colab script) ──────────────
+SIG_WIDTH  = 90    # points
+SIG_HEIGHT = 40    # points
+MARGIN_X   = 20    # points: from left
+MARGIN_Y   = 20    # points: from bottom
 
 
-def add_signature_to_pdf(
-    input_pdf: Union[bytes, str, Path],
-    arg2: Union[bytes, str, Path, None] = None,
-    arg3: Union[str, Path, None] = None,
-    *,
-    output_pdf: Union[str, Path, None] = None,
-    signature_path: Union[str, Path, None] = None,
-    signature: Union[bytes, str, Path, None] = None,
-) -> Union[bytes, None]:
+def add_signature_to_pdf(input_pdf: bytes, signature: bytes) -> bytes:
     """
-    Open the PDF and insert signature image in bottom-left corner with static margins:
-      - Width: 45 pt
-      - Height: 20 pt
-      - From left (X): 5 pt
-      - From bottom (Y): 5 pt
+    Stamp the signature image on the bottom-left corner of every page.
 
-    Supports both web API bytes and file paths.
+    Same logic as the Colab script; the only difference is that the PDF and
+    the signature arrive as bytes (uploads) instead of file paths.
     """
-    actual_output = output_pdf
-    actual_sig = signature if signature is not None else signature_path
-
-    if arg3 is not None:
-        # Called as: add_signature_to_pdf(input_pdf, output_pdf, signature_path)
-        actual_output = arg2
-        actual_sig = arg3
-    elif arg2 is not None:
-        if isinstance(arg2, bytes):
-            actual_sig = arg2
-        elif actual_output is not None:
-            actual_sig = arg2
-        else:
-            actual_sig = arg2
-
     # Open the PDF
-    if isinstance(input_pdf, (str, Path)):
-        doc = fitz.open(str(input_pdf))
-    else:
-        doc = fitz.open(stream=input_pdf, filetype="pdf")
+    doc = fitz.open(stream=input_pdf, filetype="pdf")
 
-    # Static settings
+    # Signature image size
     sig_width = SIG_WIDTH
     sig_height = SIG_HEIGHT
-    margin_x = MARGIN_X
-    margin_y = MARGIN_Y
 
     for page in doc:
         # Get page dimensions
-        page_width = page.rect.width
         page_height = page.rect.height
+
+        # Position: bottom-left corner (with margin)
+        margin_x = MARGIN_X
+        margin_y = MARGIN_Y
 
         # Define rectangle where image will be placed
         rect = fitz.Rect(
@@ -88,19 +59,9 @@ def add_signature_to_pdf(
         )
 
         # Insert image
-        if isinstance(actual_sig, (str, Path)):
-            page.insert_image(rect, filename=str(actual_sig))
-        elif isinstance(actual_sig, bytes):
-            page.insert_image(rect, stream=actual_sig)
-        else:
-            raise ValueError("No valid signature image or path provided")
+        page.insert_image(rect, stream=signature)
 
     # Save output
-    if actual_output:
-        doc.save(str(actual_output))
-        doc.close()
-        return None
-
     output_buffer = io.BytesIO()
     doc.save(output_buffer)
     doc.close()
