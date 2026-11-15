@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const BASE = 'http://localhost:8000'
+// Dev: talk to the local backend directly. Production build: go through the
+// nginx proxy (/api/ -> backend container), so it works on any host.
+const BASE = import.meta.env.DEV ? 'http://localhost:8000' : '/api'
 
 /** Render a PDF page as a base64 PNG image. */
 export async function previewPdfPage(

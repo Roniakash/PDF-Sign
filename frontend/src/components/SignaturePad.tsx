@@ -29,7 +29,7 @@ const TrashIcon = () => (
   </svg>
 )
 
-export const SignaturePad: React.FC<SignaturePadProps> = ({ onSignatureReady, signatureBlob }) => {
+export const SignaturePad: React.FC<SignaturePadProps> = ({ onSignatureReady }) => {
   const [uploadedPreview, setUploadedPreview] = useState<string | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
